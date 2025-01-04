@@ -3,9 +3,7 @@ package gescom;
 import metier.*;
 import dao.*;
 
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 import utilitaires.*;
 
@@ -79,6 +77,22 @@ public class Gescom {
      */
     private static void afficherCaClient(Representant unRepresentant) {
         /* A compléter */
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Saisissez le N° du client : ");
+        int idClient = sc.nextInt();
+
+
+        Client client = unRepresentant.getClientById(idClient);
+        if (client == null) {
+            System.out.println("Client inexistant.");
+            return;
+        }
+
+        client.cumulCA();
+        double caClient = client.getCaClient();
+
+        System.out.println("Chiffre d'affaires du client " + client.getIdClient() + " (" + client.getRaisonSociale() + ") : " + caClient + " €");
     }
 
     /**
@@ -90,6 +104,20 @@ public class Gescom {
      */
     private static void afficherCommandesClient(Representant unRepresentant) {
         /* A compléter */
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Liste des commandes d'un client \n N° du client : ");
+        int idclient = sc.nextInt();
+        Client client = unRepresentant.getClientById(idclient);
+
+        if (client == null) {
+            System.out.println("Client inexistant.");
+            return;
+        }
+
+
+        for (Commande commande : client.getLesCommandes()) {
+            afficherCommande(commande); // Appelle la méthode pour afficher les détails d'une commande
+        }
     }
 
     /**
@@ -119,8 +147,33 @@ public class Gescom {
      * @param unRepresentant 
      */
     private static void supprimerCommande(Representant unRepresentant) {
-        /* A compléter */
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Saisissez le N° de la commande à supprimer : ");
+        int idCommande = sc.nextInt();
+
+        boolean commandeTrouvee = false;
+
+
+        for (Client client : unRepresentant.getClients()) {
+
+            Commande commande = client.getCommandeById(idCommande);
+
+            if (commande != null) {
+
+                client.getLesCommandes().remove(commande);
+                commandeTrouvee = true;
+                System.out.println("Commande " + idCommande + " supprimée avec succès.");
+                break;
+            }
+        }
+
+        if (!commandeTrouvee) {
+            System.out.println("Commande inexistante.");
+        }
+
+
     }
+
 
     /**
      * Affiche la liste des articles commandés sans doublons.
@@ -133,13 +186,14 @@ public class Gescom {
      * @param unRepresentant 
      */
     private static void afficherArticlesCommandes(Representant unRepresentant) {
+        //set = collection qui ne peut pas contenir de doublon
+        Set<Article> articlesCommandes = new HashSet<>();
         for (Client client : unRepresentant.getClients()) {
             for (Commande commande : client.getLesCommandes()) {
                 for (Ligne ligne : commande.getLesLignes()) {
                     Article article = ligne.getUnArticle();
 
-                    //set = collection qui ne peut pas contenir de doublon
-                    Set<Article> articlesCommandes = new HashSet<>();
+
                     // Si l'article n'est pas déjà dans le set, on l'ajoute et l'affiche
                     if (!articlesCommandes.contains(article)) {
                         articlesCommandes.add(article);
@@ -157,9 +211,8 @@ public class Gescom {
      * @param unArticle 
      */
     private static void afficherArticle(Article unArticle) {
-        System.out.println("Article ID: " + unArticle.getIdArticle() +
-                ", Désignation: " + unArticle.getDesignation() +
-                ", Prix: " + unArticle.getPrix());
+        System.out.println("Article " + unArticle.getIdArticle() + " " + unArticle.getDesignation() +
+                ", Famille : " + unArticle.getUneFamille().getLibFamille() + " , TVA "+ unArticle.getUneTva().getTauxTva());
     }
 
     /**
@@ -170,6 +223,20 @@ public class Gescom {
      */
     private static void afficherCaClients(Representant unRepresentant) {
         /* A compléter */
+        System.out.println("Chiffre d'affaires de tous les clients :");
+
+
+        for (Client client : unRepresentant.getClients()) {
+
+            client.cumulCA();
+            double caClient = client.getCaClient();
+
+
+
+            System.out.println( client.getIdClient() + " " +  client.getRaisonSociale() + " CA : "+ caClient + " €");
+        }
+
+
     }
 
     /**
@@ -182,8 +249,29 @@ public class Gescom {
      * le client
      * @param unRepresentant 
      */
+
     private static void rechercherCommande(Representant unRepresentant) {
         /* A compléter */
+        Scanner sc = new Scanner(System.in);
+        System.out.println("N° client : ");
+        int idClient = sc.nextInt(); // Saisie du numéro du client
+        Client client = unRepresentant.getClientById(idClient); // Recherche du client
+
+        if (client == null) {
+            System.out.println("Client inexistant.");
+            return;
+        }
+
+        System.out.println("N° commande : ");
+        int idCommande = sc.nextInt(); // Saisie du numéro de la commande
+        Commande commande = client.getCommandeById(idCommande); // Recherche de la commande
+
+        if (commande == null) {
+            System.out.println("Commande inexistante.");
+            return;
+        }
+
+        afficherCommande(commande); // Affichage de la commande si elle existe
 
     }
 
@@ -200,8 +288,52 @@ public class Gescom {
      * @param unRepresentant 
      */
     private static void supprimerLigne(Representant unRepresentant) {
-        /* A compléter */
+        Scanner sc = new Scanner(System.in);
+
+
+        System.out.println("Saisissez le N° du client : ");
+        int idClient = sc.nextInt();
+
+
+        Client client = unRepresentant.getClientById(idClient);
+        if (client == null) {
+            System.out.println("Client inexistant.");
+            return;
+        }
+
+
+        System.out.println("Saisissez le N° de la commande : ");
+        int idCommande = sc.nextInt();
+
+
+        Commande commande = client.getCommandeById(idCommande);
+        if (commande == null) {
+            System.out.println("Commande inexistante.");
+            return;
+        }
+
+
+        System.out.println("Saisissez le N° de l'article : ");
+        int idArticle = sc.nextInt();
+
+
+        Ligne ligneASupprimer = null;
+        for (Ligne ligne : commande.getLesLignes()) {
+            if (ligne.getUnArticle().getIdArticle() == idArticle) {
+                ligneASupprimer = ligne;
+                break;
+            }
+        }
+
+
+        if (ligneASupprimer != null) {
+            commande.getLesLignes().remove(ligneASupprimer);
+            System.out.println("Ligne supprimée avec succès.");
+        } else {
+            System.out.println("Article non trouvé dans cette commande.");
+        }
     }
+
 
     /**
      * Ajoute une commande à un client.
@@ -216,8 +348,52 @@ public class Gescom {
      * @param unRepresentant 
      */
     private static void ajouterCommande(Representant unRepresentant) {
-        /* A compléter */
+        Scanner sc = new Scanner(System.in);
+        System.out.println("N° client : ");
+        int idClient = sc.nextInt(); // Saisie de l'id du client
+        Client client = unRepresentant.getClientById(idClient); // Recherche du client
+
+        if (client == null) {
+            System.out.println("Client inexistant.");
+            return;
+        }
+
+        System.out.println("N° commande : ");
+        int idCommande = sc.nextInt(); // Saisie de l'id de la commande
+        System.out.println("Date de commande (format JJ/MM/AAAA) : ");
+        String dateCommandeStr = sc.next(); // Saisie de la date
+        Date dateCommande = Outils.stringToDate(dateCommandeStr); // Conversion de la date
+
+        Commande nouvelleCommande = new Commande(idCommande, dateCommande); // Création de la commande
+
+        boolean ajouterLignes = true;
+        List<Ligne> lignes = new ArrayList<>();//création d'une liste de lignes qui sera rempli lors du processus et sera inséré dans la commande.
+        while (ajouterLignes) {
+            System.out.println("N° article : ");
+            int idArticle = sc.nextInt(); // Saisie de l'id de l'article
+            Article article = bdd.getArticleBdD(idArticle); // Recherche de l'article dans la base de données
+
+            if (article == null) {
+                System.out.println("Article inexistant.");
+            } else {
+                System.out.println("Quantité commandée : ");
+                int qteCommande = sc.nextInt(); // Saisie de la quantité
+                Ligne ligne = new Ligne(article, qteCommande); // Création de la ligne de commande
+
+                lignes.add(ligne);
+                nouvelleCommande.setLesLignes(lignes); // Ajout de la ligne à la commande
+            }
+
+            // Demande si l'utilisateur souhaite ajouter une autre ligne
+            System.out.println("Ajouter une autre ligne ? (oui/non) : ");
+            String continuer = sc.next();
+            ajouterLignes = continuer.equalsIgnoreCase("oui");
+        }
+
+        client.ajouterCommande(nouvelleCommande); // Ajout de la commande au client
+        System.out.println("Commande ajoutée avec succès !");
     }
+
 
     /**
      * Affiche l'id, la date de la commande,
@@ -228,7 +404,7 @@ public class Gescom {
     private static void afficherCommande(Commande uneCommande) {
         System.out.println("Commande : " + uneCommande.getIdCommande() + "du : " + uneCommande.getDateCommande());
         for (Ligne ligne : uneCommande.getLesLignes()) {
-            System.out.println(ligne.getUnArticle().getIdArticle() + ligne.getUnArticle().getDesignation() + ", quantité : " + ligne.getUnArticle().getQteStock());
+            System.out.println(ligne.getUnArticle().getIdArticle() + ligne.getUnArticle().getDesignation() + ", quantité : " + ligne.getQteCommande());
         }
 
 

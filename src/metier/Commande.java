@@ -99,7 +99,7 @@ public class Commande {
     public double valoriserCommande() {
         double totalHT = 0.0;
         for (Ligne ligne : lesLignes) {
-            double prixArticle = ligne.getUnArticle().getPrix();
+            double prixArticle = ligne.getUnArticle().getCaArticle();
             int quantite = ligne.getQteCommande();
             totalHT += prixArticle * quantite;
         }
